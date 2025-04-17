@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم الإدارية{% endblock %}
+
+{% block content %}
+<!-- Navigation Bar -->
+<nav class="bg-slate-900 border-b border-white/10 py-4 px-8">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="flex items-center gap-6">
+            <a href="{{ url_for('home') }}" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all duration-300 text-base">
+                الرئيسية
+            </a>
+            <a href="{{ url_for('chat') }}" class="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white transition-all duration-300 text-base">
+                غرفة الدردشة
+            </a>
+            <a href="{{ url_for('myaccount') }}" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all duration-300 text-base">
+                حسابي
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+        <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
+                <h1 class="text-4xl font-bold bg-gradient-to-r from-sky-500 to-indigo-500 bg-clip-text text-transparent">
+                    لوحة التحكم الإدارية
+                </h1>
+                <button onclick="refreshDashboard()" class="group px-6 py-3 bg-indigo-500 hover:bg-indigo-600 rounded-xl transition-all flex items-center gap-3 text-white font-medium shadow-lg shadow-indigo-500/20 hover:scale-105">
+                    <i class="fas fa-sync-alt group-hover:rotate-180 transition-transform duration-500"></i>
+                    تحديث اللوحة
+                </button>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <!-- Active Users -->
+                <div class="stat-card bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 rounded-2xl p-6 border border-emerald-500/20">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-emerald-500 rounded-xl">
+                            <i class="fas fa-users text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-emerald-400 text-sm font-medium">المستخدمين المفعلين</h3>
+                            <p class="text-3xl font-bold text-white" id="active-users-count">{{ approved_users|length }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Requests -->
+                <div class="stat-card bg-gradient-to-br from-amber-500/10 to-amber-500/5 rounded-2xl p-6 border border-amber-500/20">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-amber-500 rounded-xl">
+                            <i class="fas fa-user-clock text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-amber-400 text-sm font-medium">الطلبات المعلقة</h3>
+                            <p class="text-3xl font-bold text-white" id="pending-users-count">{{ not_approved_users|length }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Users -->
+                <div class="stat-card bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-2xl p-6 border border-blue-500/20">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-blue-500 rounded-xl">
+                            <i class="fas fa-chart-line text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-blue-400 text-sm font-medium">إجمالي المستخدمين</h3>
+                            <p class="text-3xl font-bold text-white" id="total-users-count">{{ approved_users|length + not_approved_users|length }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <nav class="flex flex-wrap gap-4 mb-8 border-b border-white/10">
+                <button onclick="switchTab('active-users')" class="tab-btn active-tab px-6 py-4 text-lg font-medium relative">
+                    <i class="fas fa-user-check mr-2"></i>
+                    المستخدمين المفعلين
+                </button>
+
+                <button onclick="switchTab('pending-requests')" class="tab-btn px-6 py-4 text-lg font-medium relative">
+                    <i class="fas fa-user-clock mr-2"></i>
+                    الطلبات المعلقة
+                </button>
+
+                <button onclick="switchTab('user-settings')" class="tab-btn px-6 py-4 text-lg font-medium relative">
+                    <i class="fas fa-user-gear mr-2"></i>
+                    اعدادات المستخدمين
+                </button>
+            </nav>
+
+            <!-- Active Users Tab -->
+            <div id="active-users" class="tab-content">
+                <div class="grid gap-6">
+                    {% for user in approved_users %}
+                    <div id="user-{{user.id}}" class="user-card bg-white/5 border border-emerald-500/20 rounded-2xl p-6 backdrop-blur-sm transition-all">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-4">
+                                <div class="bg-emerald-500/20 p-4 rounded-xl">
+                                    <img class="w-12 h-12 rounded-full object-cover transition-transform hover:scale-110" 
+                                         src="{{ url_for('static', filename='images/users/'+filter_by(id=user.id).first().user_image ) }}" 
+                                         alt="{{user.full_name}}'s profile picture">
+                                </div>
+                                <div class="text-right">
+                                    <h3 class="text-xl font-bold text-white hover:text-emerald-400 transition-colors">{{user.full_name}}</h3>
+                                    <p class="text-gray-400">تاريخ الازدياد: {{user.birth_date}}</p>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <span class="status-badge px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm">مفعل</span>
+                                        <span class="user-id text-gray-400 text-sm">#{{user.id}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Pending Requests Tab -->
+            <div id="pending-requests" class="tab-content hidden">
+                <div class="grid gap-6">
+                    {% for user in not_approved_users %}
+                    <div id="pending-{{user.id}}" class="pending-card bg-white/5 border border-amber-500/20 rounded-2xl p-6 backdrop-blur-sm transition-all">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div class="flex flex-wrap gap-4 order-2 md:order-1">
+                                <button onclick="handleUserRequest('{{user.id}}', 'accept')" class="action-btn px-4 py-2 bg-emerald-500 hover:bg-emerald-600 rounded-xl text-white font-medium">
+                                    <i class="fas fa-check mr-2"></i>قبول
+                                </button>
+                                <button onclick="handleUserRequest('{{user.id}}', 'reject')" class="action-btn px-4 py-2 bg-rose-500 hover:bg-rose-600 rounded-xl text-white font-medium">
+                                    <i class="fas fa-times mr-2"></i>رفض
+                                </button>
+                                <button onclick="handleUserRequest('{{user.id}}', 'ignore')" class="action-btn px-4 py-2 bg-gray-500 hover:bg-gray-600 rounded-xl text-white font-medium">
+                                    <i class="fas fa-bell-slash mr-2"></i>تجاهل
+                                </button>
+                            </div>
+                            <div class="text-right order-1 md:order-2">
+                                <h3 class="text-xl font-bold text-white hover:text-amber-400 transition-colors">{{user.full_name}}</h3>
+                                <p class="text-gray-400">تاريخ الطلب: {{user.approve_request_date.date()}}</p>
+                                <div class="flex items-center gap-3 mt-2">
+                                    <span class="status-badge px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-sm">قيد الانتظار</span>
+                                    <span class="user-id text-gray-400 text-sm">#{{user.id}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Users Settings Tab -->
+            <div id="user-settings" class="tab-content hidden">
+                <div class="grid gap-6">
+                    {% for user in all_users %}
+                    <div class="settings-card bg-white/5 border border-emerald-500/20 rounded-2xl p-6 backdrop-blur-sm transition-all">
+                        <div class="flex items-center gap-4 order-1 md:order-2 w-max md:w-max">
+                            <div class="bg-emerald-500/20 p-4 rounded-xl">
+                                <img class="w-12 h-12 rounded-full object-cover transition-transform hover:scale-110" 
+                                     src="{{ url_for('static', filename='images/users/'+filter_by(id=user.id).first().user_image ) }}" 
+                                     alt="{{user.full_name}}'s profile picture">
+                            </div>
+                            <div class="text-right flex-1 md:flex-auto">
+                                <h3 class="text-xl font-bold text-white hover:text-emerald-400 transition-colors">{{user.full_name}}</h3>
+                                <p class="text-gray-400 text-sm">تاريخ الازدياد: {{user.birth_date}}</p>
+                                <div class="flex items-center gap-3 mt-2 flex-wrap">
+                                    <span class="status-badge px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm">مفعل</span>
+                                    <span class="user-id text-gray-400 text-sm">#{{user.id}}</span>
+                                    <span id="role-{{user.id}}" class="user-id text-{{'gray' if user.role == 'تلميذ' else 'blue' if user.role == 'مراقب' else 'yellow' if user.role == 'استاذ' else 'red' if user.role == 'مسؤول'}}-400 text-sm">#{{user.role}}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col w-max gap-6">
+                            <form action="{{ url_for('adminpage') }}" method="post" class="w-full md:w-auto order-2 md:order-1" 
+                                  onsubmit="handleRoleChange(event, '{{user.id}}')">
+                                {{ form.hidden_tag() }}
+                                <div class="flex flex-col gap-2">
+                                    {{ form.change_role.label(class="text-white text-sm") }}
+                                    {{ form.change_role(id="role-select-{}".format(user.id))}}
+                                    {{ form.submit(class="px-6 py-3 bg-indigo-500 hover:bg-indigo-600 rounded-xl transition-all flex items-center gap-3 text-white font-medium shadow-lg shadow-indigo-500/20 hover:scale-105") }}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
+<script>
+    const socket = io();
+    
+
+
+    socket.on('admin_save_changes_respons', (data)=>{
+        console.log(data)
+        document.getElementById(`role-${data[0]}`).textContent = data[1]
+    })
+    function refreshDashboard() {
+        window.location.reload();
+    }
+
+    function handleUserRequest(userId, action) {
+        const userCard = document.getElementById(`pending-${userId}`);
+        const actionMap = {
+            'accept': 'قبول',
+            'reject': 'رفض',
+            'ignore': 'تجاهل'
+        };
+        
+        userCard.classList.add('opacity-50');
+        socket.emit('admin_pending_request_handler_event', [userId, action]);
+        showToast(`تم ${actionMap[action]} المستخدم بنجاح`);
+        
+        userCard.style.transform = 'translateX(90px)';
+        userCard.style.opacity = '0';
+        setTimeout(() => {
+            userCard.remove();
+            updateCounters();
+        }, 500);
+    }
+    
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/20 transform transition-all duration-300 hover:scale-105 z-50';
+        toast.textContent = message;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-y-2');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    function handleRoleChange(event, userId) {
+        event.preventDefault();
+        const select = document.getElementById(`role-select-${userId}`);
+        socket.emit('admin_save_changes_event', [userId, select.value]);
+        showToast('تم حفظ التغييرات بنجاح');
+    }
+
+    function updateCounters() {
+        const pendingCount = document.querySelectorAll('.pending-card').length;
+        const activeCount = document.querySelectorAll('.user-card').length;
+        
+        document.getElementById('pending-users-count').textContent = pendingCount;
+        document.getElementById('active-users-count').textContent = activeCount;
+        document.getElementById('total-users-count').textContent = pendingCount + activeCount;
+    }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active-tab');
+        });
+        
+        document.getElementById(tabId).classList.remove('hidden');
+        event.currentTarget.classList.add('active-tab');
+    }
+</script>
+
+<style>
+    .tab-btn {
+        color: #94a3b8;
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s;
+    }
+    
+    .tab-btn:hover {
+        color: #e2e8f0;
+        transform: scale(1.05);
+    }
+    
+    .tab-btn.active-tab {
+        color: #ffffff;
+        border-bottom-color: #3b82f6;
+    }
+
+    .tab-content {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .action-btn {
+        transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .stat-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .stat-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
