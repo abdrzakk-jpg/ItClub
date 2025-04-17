@@ -22,3 +22,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 login_manager.login_message = 'يجب عليك تسجيل الدخول اولا'
 login_manager.login_view = '/login'
 login_manager.login_message_category = 'info'
+
+
+
+from pkg import routes
