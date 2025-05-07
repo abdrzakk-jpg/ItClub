@@ -1,0 +1,656 @@
+{% extends "base.html" %}
+
+{% block title %}نبراس-مساعدك الذكي{% endblock %}
+
+{% block content %}
+{% include "components/nav.html" %}
+<style>
+  @keyframes fadeIn {from{opacity: 0;}to{opacity: 1;}}
+  @keyframes typing {
+    0% { opacity: 0.3; }
+    50% { opacity: 1; }
+    100% { opacity: 0.3; }
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  .fade-in { animation: fadeIn .5s ease-in-out forwards; }
+  .typing-dot { animation: typing 1.4s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  .pulse-animation { animation: pulse 2s infinite; }
+  
+  /* RTL support */
+  body {
+    direction: rtl;
+    font-family: 'Cairo', 'Tajawal', sans-serif;
+    scroll-behavior: smooth;
+  }
+  
+  /* Responsive design */
+  #chat-area {
+    height: calc(100vh - 300px);
+    transition: all 0.5s ease;
+    scrollbar-width: thin;
+    scrollbar-color: #4b5563 #1f2937;
+  }
+  
+  #chat-area::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  #chat-area::-webkit-scrollbar-track {
+    background: #1f2937;
+    border-radius: 10px;
+  }
+  
+  #chat-area::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 10px;
+  }
+  
+  #chat-area::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+  }
+  
+  @media (max-width: 768px) {
+    #chat-area {
+      height: calc(100vh - 250px);
+    }
+    .message-container {
+      padding: 0.5rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    #logo {
+      width: 100px;
+      height: 100px;
+    }
+    #chat-area {
+      height: calc(100vh - 220px);
+    }
+    .message-text {
+      font-size: 0.9rem;
+    }
+  }
+
+  /* Modal styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    overflow: auto;
+  }
+  
+  .modal-content {
+    background-color: #1f2937;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 16px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+    border: 1px solid #374151;
+  }
+  
+  .close {
+    color: #9ca3af;
+    float: left;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  /* Message styling */
+  .user-message {
+    position: relative;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+  }
+  
+  .ai-message {
+    position: relative;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+  }
+  
+  .message-container {
+    position: relative;
+    padding: 1rem 0;
+  }
+  
+  .message-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, rgba(75, 85, 99, 0), rgba(75, 85, 99, 0.5), rgba(75, 85, 99, 0));
+  }
+  
+  /* Typing indicator */
+  .typing-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .typing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: currentColor;
+  }
+  
+  /* Messaging form */
+  .message-input {
+    resize: none;
+    min-height: 48px;
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #4b5563 #1f2937;
+  }
+  
+  .message-input::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .message-input::-webkit-scrollbar-track {
+    background: #1f2937;
+  }
+  
+  .message-input::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: I0px;
+  }
+  
+  /* Icon styling */
+  .icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 9999px;
+  }
+  
+  /* Button hover effects */
+  .hover-scale {
+    transition: transform 0.2s ease;
+  }
+  
+  .hover-scale:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Shadow effect for depth */
+  .depth-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+</style>
+
+<div id="screen" class="bg-gray-900 text-white min-h-screen flex flex-col justify-between items-center py-4 px-4 md:py-8">
+  <!-- Logo and Greeting - Initial View -->
+  <div id="initial-view" class="flex flex-col items-center justify-center gap-6 h-full absolute top-0 left-0 right-0 bottom-0 z-10 bg-gray-900">
+    <div id="logo-container" class="w-40 h-40 md:w-60 md:h-60 flex items-center justify-center mb-4">
+      <img id="logo" src="{{ url_for('static', filename='images/NibrasAiPicture.png') }}" alt="نبراس" class="w-40 h-40 md:w-60 md:h-60 transition-all duration-500" />
+    </div>
+    
+    <div id="greeting" class="flex flex-col items-center gap-3 md:gap-4 text-center px-4">
+      <h1 class="text-xl md:text-3xl">مرحباً بك مع الذكاء الاصطناعي</h1>
+      <h2 class="text-2xl md:text-4xl font-bold bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent pulse-animation">نبــــراس</h2>
+      <p class="text-gray-400 text-sm md:text-base mt-2">مساعدك الذكي لمختلف المهام والاستفسارات</p>
+    </div>
+    
+    <div  class="flex flex-col gap-3 w-full max-w-md mt-6">
+      <button class="bg-gradient-to-r from-orange-500 to-yellow-600 hover:from-orange-600 hover:to-yellow-700 text-white font-bold py-3 px-6 rounded-xl transition duration-300 hover-scale depth-shadow flex items-center justify-center gap-2" onclick="startChat()">
+        <i class="fas fa-comments"></i>
+        <span>ابداء محادثة مؤقتة</span>
+      </button>
+      <span class="text-gray-300 mx-auto">لم يتم اضافة حفظ المحادثات بعد...</span>
+      {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('register.register') }}" class="bg-transparent border border-orange-500 text-orange-500 hover:bg-orange-500/30 hover:bg-opacity-10 font-bold py-3 px-6 rounded-xl transition duration-300 text-center hover-scale depth-shadow">
+          سجّل الآن للاستمتاع بتجربة كاملة
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Chat Interface - Appears after starting chat -->
+  <div id="chat-interface" class="w-full h-full flex flex-col hidden">
+    <!-- Header -->
+    <div class="w-full max-w-4xl mx-auto flex items-center justify-between py-3 px-4 border-b border-gray-800">
+      <div class="flex items-center gap-3">
+        <img src="{{ url_for('static', filename='images/NibrasAiPicture.png') }}" alt="نبراس" class="w-8 h-8 rounded-full" />
+        <div>
+          <h3 class="font-bold text-orange-400">نبراس</h3>
+          <div class="text-xs text-green-500 flex items-center gap-1">
+            <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+            متصل
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" id="info-btn" class="text-gray-400 hover:text-white p-2 rounded-full transition-colors" title="معلومات">
+          <i class="fas fa-question"></i>
+        </button>
+        <button type="button" class="text-gray-400 hover:text-white p-2 rounded-full transition-colors" onclick="newChat()" title="محادثة جديدة">
+          <i class="fas fa-plus"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages Area -->
+    <div id="chat-area" class="w-full max-w-4xl mx-auto flex-grow flex flex-col gap-0 overflow-y-auto px-0 py-4 scroll-smooth ">
+      <!-- Welcome Message -->
+      <di v class="message-container">
+        <div class="flex gap-4 px-4">
+          <div class="flex-shrink-0">
+            <div class="bg-orange-600 rounded-full w-8 h-8 flex items-center justify-center">
+              <img src="{{ url_for('static', filename='images/NibrasAiPicture.png') }}" alt="نبراس" class="w-8 h-8 rounded-full" />
+            </div>
+          </div>
+          <div class="flex-grow max-w-3xl space-y-2">
+            <div class="font-medium">نبراس</div>
+            <div class="message-text">
+              مرحباً! أنا نبراس، مساعدك الذكي. كيف يمكنني مساعدتك اليوم؟
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- المحادثات ستظهر هنا -->
+    </div>
+
+    <!-- إدخال النص -->
+    <div class="w-full relative bottom-0  max-w-4xl mx-auto pt-2 pb-4 px-4 border-t border-gray-800">
+      <form action="{{ url_for('ai_chat.ai_chat') }}" id="messaging-form" method="POST" class="relative w-full flex items-end gap-2">
+        {{ form.hidden_tag() }}
+        <div class="flex-grow relative">
+          {{ form.message(id="message-value", class="message-input bg-gray-800 text-white rounded-xl w-full px-4 py-3 pr-10 focus:ring-2 focus:ring-orange-500 focus:outline-none transition-colors duration-200", placeholder="اكتب رسالتك هنا...", rows="1") }}
+        </div>
+        <button id="submit" type="submit" class="bg-gradient-to-r from-orange-500 to-yellow-600 hover:from-orange-600 hover:to-yellow-700 text-white rounded-xl p-3 transition-colors duration-200 flex-shrink-0 hover-scale">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
+      <p id="trials-message" class="text-center text-sm text-gray-400 mt-3">
+        لديك <span id="trials-counter" class="font-bold text-orange-400">10</span> محاولات متبقية من فترتك المجانية
+        <button type="button" class="text-orange-400 hover:text-orange-300 underline focus:outline-none" onclick="document.getElementById('info-modal').style.display='block'">
+          لماذا؟
+        </button>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="info-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2 class="text-xl font-bold bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent mb-4">لماذا لديك فقط 10 محاولات؟</h2>
+    <p class="text-gray-200 mb-4">
+      نبراس هو مساعد ذكي يعتمد على تقنيات الذكاء الاصطناعي المتقدمة وخدمات API باهظة الثمن.
+    </p>
+    <p class="text-gray-200 mb-4">
+      نقدم لك 10 محاولات مجانية للتعرف على قدرات نبراس وكيف يمكنه مساعدتك.
+    </p>
+    <p class="text-gray-200 mb-4">
+      بعد استخدام المحاولات المجانية، يمكنك التسجيل كعضو للحصول على المزيد من المميزات والاستخدام غير المحدود.
+    </p>
+    <div class="flex justify-center mt-6">
+      <a href="{{ url_for('register.register') }}" class="bg-gradient-to-r from-orange-500 to-yellow-600 hover:from-orange-600 hover:to-yellow-700 text-white px-6 py-3 rounded-xl transition-colors duration-200 font-bold hover-scale depth-shadow">سجل الآن</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Auto-resize textarea for message input
+  function autoResizeTextarea() {
+    const textarea = document.getElementById('message-value');
+    if (!textarea) return;
+    
+    textarea.addEventListener('input', function() {
+      this.style.height = 'auto';
+      const newHeight = Math.min(this.scrollHeight, 200);
+      this.style.height = newHeight + 'px';
+    });
+  }
+
+  // Start chat function
+  function startChat() {
+    const initialView = document.getElementById('initial-view');
+    const chatInterface = document.getElementById('chat-interface');
+    
+    initialView.classList.add('fade-out');
+    setTimeout(() => {
+      initialView.style.display = 'none';
+      chatInterface.classList.remove('hidden');
+      chatInterface.classList.add('fade-in');
+      
+      // Focus on input
+      document.getElementById('message-value').focus();
+    }, 500);
+  }
+  
+  // New chat function
+  function newChat() {
+    const chatArea = document.getElementById('chat-area');
+    
+    // Keep only the welcome message
+    while (chatArea.children.length > 1) {
+      chatArea.removeChild(chatArea.lastChild);
+    }
+    
+    // Focus on input
+    document.getElementById('message-value').focus();
+  }
+  
+  // Add a user message to the chat
+  function addUserMessage(text) {
+    const chatArea = document.getElementById('chat-area');
+    const messageHTML = `
+      <div class="message-container fade-in">
+        <div class="flex gap-4 px-4">
+          <div class="flex-shrink-0">
+            <div class="bg-gray-700 rounded-full w-8 h-8 flex items-center justify-center">
+              <i class="fas fa-user text-white"></i>
+            </div>
+          </div>
+          <div class="flex-grow max-w-3xl space-y-2">
+            <div class="font-medium">أنت</div>
+            <div class="message-text">
+              ${text}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    chatArea.insertAdjacentHTML('beforeend', messageHTML);
+  }
+  
+  // Add typing indicator
+  function addTypingIndicator() {
+    const chatArea = document.getElementById('chat-area');
+    const indicatorHTML = `
+      <div id="typing-indicator" class="message-container fade-in">
+        <div class="flex gap-4 px-4">
+          <div class="flex-shrink-0">
+            <div class="bg-orange-600 rounded-full w-8 h-8 flex items-center justify-center">
+              <img src="{{ url_for('static', filename='images/NibrasAiPicture.png') }}" alt="نبراس" class="w-8 h-8 rounded-full" />
+            </div>
+          </div>
+          <div class="flex-grow max-w-3xl">
+            <div class="font-medium">نبراس</div>
+            <div class="message-text">
+              <div class="typing-indicator">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    chatArea.insertAdjacentHTML('beforeend', indicatorHTML);
+  }
+  
+  // Add an AI message to the chat
+  function addAIMessage(text) {
+    const chatArea = document.getElementById('chat-area');
+    const typingIndicator = document.getElementById('typing-indicator');
+    
+    
+    if (typingIndicator) {
+      typingIndicator.remove();
+    }
+    
+// معالجة النص قبل عرضه
+    const formatBold = (text) => {
+      return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    };
+
+    const formattedText = formatBold(text);
+
+    const messageHTML = `
+      <div class="message-container fade-in">
+        <div class="flex gap-4 px-4">
+          <div class="flex-shrink-0">
+            <div class="bg-orange-600 rounded-full w-8 h-8 flex items-center justify-center">
+              <img src="{{ url_for('static', filename='images/NibrasAiPicture.png') }}" alt="نبراس" class="w-8 h-8 rounded-full" />
+            </div>
+          </div>
+          <div class="flex-grow max-w-3xl space-y-2">
+            <div class="font-medium">نبراس</div>
+            <div class="message-text">
+              ${formattedText}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    chatArea.insertAdjacentHTML('beforeend', messageHTML);
+  }
+  
+  // Scroll to bottom of chat
+  function scrollToBottom() {
+    const chatArea = document.getElementById('chat-area');
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+
+  // Document Ready
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check if we should show initial view or chat interface
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('chat') === 'true') {
+      startChat();
+    }
+    
+    // Initialize modal
+    const modal = document.getElementById('info-modal');
+    const closeBtn = document.querySelector('.close');
+    
+    document.getElementById('info-btn').addEventListener('click', function() {
+      modal.style.display = "block";
+    });
+    
+    closeBtn.addEventListener('click', function() {
+      modal.style.display = "none";
+    });
+    
+    window.addEventListener('click', function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    });
+    
+    // Initialize auto-resize for textarea
+    autoResizeTextarea();
+    
+    // Socket.io handling and message submission will be integrated in the main script
+  });
+</script>
+
+<script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jQuery.js') }}"></script>
+
+<script>
+$(document).ready(() => {
+  const socket = io();
+  const isAuthenticated = "{{ current_user.is_authenticated }}" === "True";
+  const messagesLimit = isAuthenticated ? 100 : 10;
+
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const usageKey = isAuthenticated ? "auth_usage" : "anon_usage";
+
+  // تحميل البيانات من التخزين المحلي
+  let usageData = JSON.parse(localStorage.getItem(usageKey));
+
+  // إعادة التهيئة إذا أول مرة أو يوم جديد
+  if (!usageData || usageData.date !== today) {
+    usageData = {
+      date: today,
+      count: 0
+    };
+    localStorage.setItem(usageKey, JSON.stringify(usageData));
+  }
+
+  // تحديث العداد في الواجهة
+  function updateCounter() {
+    const remaining = messagesLimit - usageData.count;
+    $("#trials-counter").text(remaining);
+    if (remaining <= 3) {
+      $("#trials-counter").addClass("text-red-500");
+    }
+
+    // منع إرسال الرسائل إذا انتهت المحاولات
+    if (remaining <= 0) {
+      $("#message-value").addClass('pointer-events-none cursor-not-allowed');
+      $("#submit-btn").addClass('cursor-not-allowed pointer-events-none');
+      $("#trials-message").text(
+        isAuthenticated
+          ? 'لقد بلغت الحد الأقصى اليومي. عد لاحقًا أو غدًا! 😊'
+          : 'لقد انتهت فترتك المجانية. أنشئ حسابًا للمتابعة مع نبراس.واستمتع ب +90 محادثة'
+      );
+    }
+  }
+
+  // إرسال رسالة
+  function sendMessage(message) {
+  if (usageData.count < messagesLimit) {
+    usageData.count++;
+    localStorage.setItem(usageKey, JSON.stringify(usageData));
+    updateCounter();
+
+    const isAuthenticated = "{{ current_user.is_authenticated }}" === "True";
+    const username = isAuthenticated ? "{{ current_user.full_name }}" : "زائر";
+
+    socket.emit('user_message_request', {
+      message: message,
+      user: {
+        type: isAuthenticated ? "authenticated" : "anonymous",
+        name: username
+      }
+    });
+
+    return true;
+  }
+  return false;
+}
+
+
+  // أول تحديث
+  updateCounter();
+
+
+  // 📜 التمرير لأسفل
+  function toBottom() {
+    const messagesContainer = document.getElementById('chat-area');
+    if (messagesContainer) {
+      messagesContainer.scrollTo({
+        top: messagesContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }
+
+  // 📦 إظهار النافذة المنبثقة
+  const modal = document.getElementById('info-modal');
+  const infoBtn = document.getElementById('info-btn');
+  const closeBtn = document.querySelector('.close');
+  if (infoBtn && modal && closeBtn) {
+    infoBtn.onclick = () => modal.style.display = "block";
+    closeBtn.onclick = () => modal.style.display = "none";
+    window.onclick = (event) => {
+      if (event.target == modal) modal.style.display = "none";
+    };
+  }
+
+  // 📤 عند إرسال النموذج
+  $("#messaging-form").submit((event) => {
+    event.preventDefault();
+    $("#submit").addClass('!pointer-events-none')
+
+    const messageInput = $("#message-value").val();
+    const chatArea = $("#chat-area");
+
+    if (messageInput && messageInput.trim() !== "") {
+      const messageSent = sendMessage(messageInput);
+
+      if (!messageSent) {
+        alert("لقد بلغت الحد الأقصى من فترتك المجانية\nسجل دخولك لتكمل المحادثة مع نبراس 👤");
+        return;
+      }
+
+      $("#message-value").val("");
+      $("#greeting").fadeOut(500);
+
+      const userMessageHTML = `
+        <div class="fade-in self-start max-w-[75%] md:max-w-[60%] bg-gradient-to-bl from-orange-500 to-orange-800 text-white rounded-xl px-4 py-2 mb-2">
+          ${messageInput}
+        </div>`;
+      chatArea.append(userMessageHTML);
+
+      const typingIndicator = `
+        <div id="typing-indicator" class="self-end max-w-[75%] md:max-w-[60%] flex items-end gap-2 mb-2">
+          <div class="text-white bg-gradient-to-tr from-gray-600 to-gray-800 rounded-xl px-4 py-2">
+            <span class="typing-dots">يفكر...<span>.</span><span>.</span><span>.</span></span>
+          </div>
+          <img src="{{ url_for('static', filename='images/NibrasAiPicture.png') }}" class="w-8 h-8 md:w-10 md:h-10 rounded-full" />
+        </div>`;
+      chatArea.append(typingIndicator);
+
+      toBottom();
+
+      if (parseInt(localStorage.getItem("attempts")) === messagesLimit - 1) {
+        $("#logo").addClass("!w-32 !h-32 md:!w-40 md:!h-40");
+        $("#logo-container").addClass("!mb-0");
+        setTimeout(() => {
+          $("#logo-container").fadeOut(500);
+          $("#chat-area").addClass('!h-full');
+        }, 1000);
+      }
+    }
+  });
+
+  // 💬 استقبال رد الذكاء الاصطناعي
+  socket.on('ai_response', async (data) => {
+    $("#typing-indicator").remove();
+    const aiMessageHTML = `
+      <div class="self-end max-w-[75%] md:max-w-[60%] flex items-end gap-2 mb-2">
+        <div class="fade-in text-white bg-gray-800 rounded-xl px-4 py-2">
+          ${data.message}
+        </div>
+        <img src="{{ url_for('static', filename='images/NibrasAiPicture.png') }}" class="w-8 h-8 md:w-10 md:h-10 rounded-full" />
+      </div>`;
+    $("#chat-area").append(aiMessageHTML);
+    toBottom();
+    $("#submit").removeClass('!pointer-events-none')
+  });
+
+  // ✅ تحديث الواجهة أول مرة
+  updateCounter();
+});
+</script>
+
+{% endblock %}  

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Home Page</title>
+  <script src="js/tailwind.js"></script>
+  <script src="js/fontawesmoe.all.min.js"></script>
+  <script src="js/aos.js"></script>
+  <link src="css/style.css"/>
+  <link rel="stylesheet" href="css/daisyui@5.css">
+  <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/tabs.js"></script>
+</head>
+<body class="bg-slate-900">
+  <style>
+    .fadeIn {
+      animation: fadeIn 0.2s linear forwards;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+        display: block !important;
+      }
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+  
+  <div class="max-w-2xl mx-auto p-4 bg-white rounded-lg shadow-md" dir="rtl">
+    <!-- أزرار التبويبات -->
+    <div class="flex border-b border-gray-200 mb-4">
+      <button onclick="showTab('tab1')" class="tab-btn active px-4 py-2 border-b-2 border-blue-500 text-blue-600">التبويب الأول</button>
+      <button onclick="showTab('tab2')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-500">التبويب الثاني</button>
+      <button onclick="showTab('tab3')" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-500">التبويب الثالث</button>
+    </div>
+    
+    <!-- محتوى التبويبات -->
+    <div id="tab1" class="tab-content active fadeIn">
+      <h2 class="font-bold text-lg">محتوى التبويب الأول</h2>
+      <p>هذا هو محتوى التبويب الأول الذي يظهر بشكل افتراضي.</p>
+    </div>
+    <div id="tab2" class="tab-content">
+      <h2 class="font-bold text-lg">محتوى التبويب الثاني</h2>
+      <p>هذا هو محتوى التبويب الثاني، يظهر فقط عند النقر على زر التبويب الثاني.</p>
+    </div>
+    <div id="tab3" class="tab-content">
+      <h2 class="font-bold text-lg">محتوى التبويب الثالث</h2>
+      <p>هذا هو محتوى التبويب الثالث، يظهر فقط عند النقر على زر التبويب الثالث.</p>
+    </div>
+  </div>
+  
+  <script>
+    function showTab(tabId) {
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabContents.forEach(tab => {
+        tab.classList.remove('active');
+        tab.classList.remove('fadeIn');
+      });
+      
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      tabButtons.forEach(btn => {
+        btn.classList.remove('active', 'border-blue-500', 'text-blue-600');
+        btn.classList.add('border-transparent', 'text-gray-500');
+      });
+      
+      const selectedTab = document.getElementById(tabId);
+      selectedTab.classList.add('active');
+      selectedTab.classList.add('fadeIn');
+      
+      // تنشيط الزر المحدد
+      event.currentTarget.classList.add('active', 'border-blue-500', 'text-blue-600');
+      event.currentTarget.classList.remove('border-transparent', 'text-gray-500');
+      
+    }
+  </script>
+
+
+</body>
+</html>

@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Home Page{% endblock %}
+
+{% block content %}
+
+  {% include 'components/nav.html' %}
+
+    <!-- Hero section with enhanced animations -->
+    <!-- Hero section -->
+<section id="section1" class="min-h-screen py-16 flex flex-col justify-center items-center text-center px-4">
+    <div class="w-full max-w-xl" data-aos="slide-up" data-aos-duration="700">
+        <img class="mx-auto w-40 sm:w-56 md:w-64" src="{{ url_for('static', filename='images/logo-modified.png') }}" data-aos="slide-up"  data-aos-duration="450" />
+        <p class="text-lg sm:text-xl mb-6 bg-gradient-to-l from-orange-500 to-yellow-500 bg-clip-text text-transparent font-bold">
+            نادي الإبداع العلمي هو تجمع للإفراد المهتمين بالعلوم و الإبداع حيث يهدف هذا النادي إلي تعزيز الفضول العلمي و تنمية المهارات العلمية لدي التلاميذ.
+        </p>
+        <button class="group py-2 px-4 rounded-full border border-white bg-transparent text-white hover:bg-white hover:text-[#222] duration-200 cursor-pointer text-md"
+                onclick="scrollToSection('section2')">
+            اكتشف المزيد
+            <i class="fas fa-arrow-down ml-2 group-hover:translate-y-1 transition-transform duration-300"></i>
+        </button>
+    </div>
+</section>
+
+<!-- Objectives section -->
+<section id="section2" class="min-h-screen py-16 flex flex-col justify-center items-center text-center px-4 bg-[#111]">
+    <div class="max-w-6xl w-full" data-aos="slide-up" data-aos-duration="600">
+        <h1 class="text-2xl font-bold mb-8 bg-gradient-to-l from-orange-500 to-yellow-500 bg-clip-text text-transparent">
+            <i class="fas fa-bullseye"></i> اهدافنا
+        </h1>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {% for text in ['إقامة معارض لتشجيع الإبداع العلمي و تكريم أحسن إبداع', 'إقامة ندوات و محاضر علمية في المؤسسة', 'إصدار مجلات و نشرات و تنظيم مسبقات علمية', 'تشجيع التلاميذ لتنفيذ أبحاث علمية متطورة', 'دعم الأبحاث العلمية', 'التعاون مع الأساتذة المشرفين على النادي داخل المؤسسة'] %}
+            <div class="relative bg-white dark:bg-[#222] p-6 shadow-lg text-[#222] dark:text-gray-100 rounded-lg duration-300 hover:text-white before:absolute before:top-0 before:left-0 before:w-full before:h-full before:bg-gradient-to-tr before:from-orange-500 before:to-yellow-500 before:-z-20 before:opacity-0 hover:before:opacity-100 before:transition-opacity hover:before:blur-md">
+                <p class="text-md leading-relaxed z-10 relative">
+                    {{ text }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button class="group py-2 px-4 rounded-full border border-white bg-transparent text-white hover:bg-white hover:text-[#222] duration-200 cursor-pointer"
+                onclick="scrollToSection('section3')">
+            اكتشف المزيد
+            <i class="fas fa-arrow-down ml-2 group-hover:translate-y-1 transition-transform duration-300"></i>
+        </button>
+    </div>
+</section>
+
+<!-- Third section -->
+<section id="section3" class="min-h-screen py-16 flex justify-center items-center text-center px-4 bg-[#111]">
+    <div class="bg-white/5 p-6 sm:p-12 rounded-xl shadow-xl border border-white/10 max-w-4xl w-full backdrop-blur-md">
+        <p class="text-lg sm:text-xl leading-relaxed mb-8">
+            يعمل النادي العلمي علي توفير بيئة تعليمية و تفاعلية و تشجيع علي الاكتشاف و التعلم العلمي في مجلات مختلفة و متنوعة في العلوم مما يساهم في تنمية المواهب و القدرات العلمية لدى التلاميذ و تحفيزهم علي اكتشاف ميدان جديد أو مجال معرفي يثري مسارهم العلمي.
+        </p>
+        <button class="group py-2 px-4 rounded-full border border-white bg-transparent text-white hover:bg-white hover:text-[#222] duration-200 cursor-pointer"
+                onclick="scrollToSection('section4')">
+            انضم الينا !
+            <i class="fas fa-arrow-down ml-2 group-hover:translate-y-1 transition-transform duration-300"></i>
+        </button>
+    </div>
+</section>
+
+<!-- Join Us section -->
+<section id="section4" class="min-h-screen py-16 flex justify-center items-center text-center px-4 bg-[#111]">
+    <div class="bg-white/5 p-6 sm:p-12 rounded-xl shadow-xl border border-white/10 max-w-4xl w-full backdrop-blur-md">
+        <p class="mb-8 text-lg bg-gradient-to-l from-orange-500 to-yellow-500 bg-clip-text text-transparent font-bold">
+            انضم الينا و كن جزءً من عالمنا الابداعي!
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+            <a href="{{ url_for('login.login') }}" class="py-2 px-4 rounded-full bg-white/20 text-white hover:bg-white/40 transition-all duration-300 shadow-lg">
+                تسجيل الدخول <i class="fa fa-user-check"></i>
+            </a>
+            <a href="{{ url_for('register.register') }}" class="py-2 px-4 rounded-full bg-gradient-to-r from-teal-500 to-teal-600 text-white hover:from-teal-600 hover:to-teal-800 transition-all duration-300 shadow-lg">
+                انشاء حساب <i class="fa fa-user-plus"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-[#111] text-slate-400 dark:text-slate-300 py-6 text-center border-t border-white/10">
+    <p class="text-sm">
+        خاص بثانوية <a href="https://www.facebook.com/share/g/1ZAwKRdMp8/" class="text-teal-400 hover:text-teal-300 transition-colors duration-300">علي بن ابي طالب</a>
+    </p>
+    <p class="text-sm mt-1">
+        تم التطوير بواسطة <span class="text-teal-400 hover:text-teal-300">@Abdrzak</span>
+    </p>
+</footer>
+
+    <!-- Enhanced JavaScript -->
+    <script>
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+            if (!mobileMenu.classList.contains('hidden')) {
+                mobileMenu.style.maxHeight = mobileMenu.scrollHeight + 'px';
+            } else {
+                mobileMenu.style.maxHeight = '0';
+            }
+        }
+
+        // Enhanced scroll-based navbar effects
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.classList.add('bg-[#333]/95');
+                nav.classList.add('shadow-2xl');
+            } else {
+                nav.classList.remove('bg-[#333]/95');
+                nav.classList.remove('shadow-2xl');
+            }
+        });
+    </script>
+{% endblock %}

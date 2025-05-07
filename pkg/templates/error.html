@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex items-center justify-center h-screen">
+    <div class="text-center bg-white/20 backdrop-blur-lg border border-white/20 p-2 rounded">
+      <h1 class="text-6xl font-bold text-gray-300">404</h1>
+      <p class="text-2xl font-medium text-gray-200">الصفحة غير موجودة</p>
+      <p class="text-gray-100">عذرًا، لا يمكننا العثور على الصفحة التي تبحث عنها.</p>
+      <a href="{{ url_for('home.home') }}" class="inline-block px-6 py-3 mt-6 text-rose-600 bg-rose-200 rounded-md hover:bg-rose-300 transition-colors">العودة إلى الصفحة الرئيسية</a>
+    </div>
+</div>
+{% endblock %}

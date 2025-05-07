@@ -1,0 +1,51 @@
+# Flask and extensions
+Flask==3.1.0
+Flask-Login==0.6.3
+Flask-SocketIO==5.5.1
+Flask-SQLAlchemy==3.1.1
+Flask-WTF==1.2.2
+Flask-Cors==4.0.0
+
+# Security
+bcrypt==4.1.2
+python-jose==3.3.0
+python-dotenv==1.1.0
+
+# Server
+gunicorn==21.2.0
+eventlet
+
+# Google API
+google-api-python-client==2.169.0
+google-auth==2.39.0
+google-genai==1.13.0
+google-generativeai==0.8.5
+googleapis-common-protos==1.70.0
+
+# Database
+SQLAlchemy==2.0.27
+greenlet==3.1.1
+
+# Utils
+bidict==0.23.1
+blinker==1.9.0
+cachelib==0.13.0
+cachetools==5.5.2
+certifi==2025.4.26
+charset-normalizer==3.4.2
+click==8.1.8
+colorama==0.4.6
+dnspython==2.7.0
+email_validator==2.2.0
+grpcio==1.71.0
+grpcio-status==1.71.0
+httpcore==1.0.9
+httplib2==0.22.0
+httpx==0.28.1
+idna==3.10
+itsdangerous==2.2.0
+Jinja2==3.1.6
+Mako==1.3.10
+MarkupSafe==3.0.2
+pillow==11.2.1
+WTForms==3.2.1
