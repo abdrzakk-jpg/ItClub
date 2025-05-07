@@ -46,6 +46,15 @@
             </div>
           </div>
           <ul class="py-1">
+            {% if current_user.role == 'مسؤول' %}
+            <li>
+              <a href="{{ url_for('adminpage.adminpage') }}" class="flex items-center px-4 py-2 text-sm text-rose-500  hover:bg-gray-700 transition-colors">
+                <i class="fas fa-user-shield w-5 h-5 ml-2"></i>
+                <span>لوحة التحكم الادارية</span>
+              </a>
+            </li>
+            {% endif %}
+
             <li>
               <a href="{{ url_for('myaccount.myaccount') }}" class="flex items-center px-4 py-2 text-sm hover:bg-gray-700 transition-colors">
                 <i class="fa fa-user-circle w-5 h-5 ml-2"></i>
