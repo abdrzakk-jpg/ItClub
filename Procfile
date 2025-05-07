@@ -1,1 +1,1 @@
-web: gunicorn -k eventlet -w 1 pkg:app
+web: python main.py
