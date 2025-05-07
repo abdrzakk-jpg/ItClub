@@ -50,4 +50,7 @@ def myaccount():
 @myaccount_bp.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('home.home'))
+    session.clear()
+    resp = redirect(url_for('login.login'))
+    resp.delete_cookie('session')
+    return resp
